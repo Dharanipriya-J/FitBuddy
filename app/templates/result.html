@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your workout plan - FitBuddy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #eef0f3; --muted: #a9b1bc; --panel: rgba(13, 16, 21, .86);
+      --field: rgba(255, 255, 255, .07); --line: rgba(255, 255, 255, .14);
+      --accent: #ff6a2b; --accent-hover: #ff8752; --ok: #4be0a0; --bad: #ff7b7b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--ink);
+      font-family: 'Roboto', system-ui, sans-serif; line-height: 1.5;
+      background: #0d0f13 url('/static/images/gym-bg.jpg') center / cover fixed no-repeat;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: -1;
+      background: linear-gradient(180deg, rgba(9, 11, 15, .22), rgba(9, 11, 15, .42));
+    }
+    h1, h2, h3 { font-family: 'Barlow Condensed', 'Roboto', sans-serif; font-weight: 700; margin: 0; letter-spacing: .01em; }
+    h1 { font-size: clamp(2.4rem, 6vw, 3.4rem); line-height: 1; }
+    h2 { font-size: 1.6rem; margin-bottom: 14px; }
+    a { color: var(--accent-hover); }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 28px;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+    }
+    label { display: block; font-size: .9rem; font-weight: 500; margin: 16px 0 6px; }
+    input, select, textarea {
+      width: 100%; padding: 12px 14px; font: inherit; color: var(--ink);
+      background: var(--field); border: 1px solid var(--line); border-radius: 8px;
+    }
+    select option { color: #111; }
+    input::placeholder, textarea::placeholder { color: #7d8794; }
+    button, .btn {
+      display: inline-block; width: 100%; margin-top: 22px; padding: 13px 18px; border: 0; border-radius: 8px;
+      background: var(--accent); color: #1c0d05; font: 700 1rem 'Roboto', sans-serif; text-align: center;
+      text-decoration: none; cursor: pointer; transition: background .15s, transform .1s;
+    }
+    button:hover, .btn:hover { background: var(--accent-hover); }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: .7; cursor: wait; }
+    .alert { border-radius: 8px; padding: 12px 14px; margin: 0 0 18px; font-size: .95rem; }
+    .alert.error { background: rgba(255, 90, 90, .14); border: 1px solid rgba(255, 123, 123, .5); color: #ffc4c4; }
+    .alert.ok { background: rgba(75, 224, 160, .13); border: 1px solid rgba(75, 224, 160, .5); color: var(--ok); }
+    pre.plan {
+      margin: 0; padding: 18px; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere;
+      font: .9rem/1.65 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+      background: rgba(0, 0, 0, .35); border: 1px solid var(--line); border-radius: 10px; color: #e6e9ee;
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+    .page { width: min(860px, 100%); margin: 0 auto; padding: 36px 16px 56px; display: grid; gap: 22px; }
+    .facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .fact { background: var(--field); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: .9rem; }
+    .fact b { font-weight: 500; color: var(--muted); margin-right: 6px; }
+    .tip { border-left: 5px solid var(--accent); }
+    .tip p { margin: 0; font-size: 1.05rem; }
+    details { margin-top: 16px; }
+    summary { cursor: pointer; color: var(--accent-hover); font-weight: 500; }
+    details pre { margin-top: 12px; }
+    .hint { color: var(--muted); font-size: .9rem; margin: -6px 0 0; }
+    .back { text-align: center; }
+    @media (max-width: 480px) { .card { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <h1>Your workout plan</h1>
+      <div class="facts">
+        <span class="fact"><b>Name</b>{{ username }}</span>
+        <span class="fact"><b>User ID</b>{{ user_id }}</span>
+        <span class="fact"><b>Age</b>{{ age }}</span>
+        <span class="fact"><b>Weight</b>{{ weight }} kg</span>
+        <span class="fact"><b>Goal</b>{{ goal }}</span>
+        <span class="fact"><b>Intensity</b>{{ intensity|capitalize }}</span>
+      </div>
+    </section>
+
+    <section class="card">
+      {% if message %}<div class="alert ok" role="status">{{ message }}</div>{% endif %}
+      {% if error %}<div class="alert error" role="alert">{{ error }}</div>{% endif %}
+      <h2>{% if updated %}Updated 7-day plan{% else %}7-day plan{% endif %}</h2>
+      <pre class="plan">{{ workout_plan }}</pre>
+      {% if updated and original_plan %}
+      <details>
+        <summary>View your original plan</summary>
+        <pre class="plan">{{ original_plan }}</pre>
+      </details>
+      {% endif %}
+    </section>
+
+    <section class="card tip">
+      <h2>Nutrition tip</h2>
+      <p>{{ nutrition_tip }}</p>
+    </section>
+
+    <section class="card">
+      <h2>Change your plan</h2>
+      <p class="hint">Ask for what you'd like different, such as more cardio or more rest days.</p>
+      <form action="/submit-feedback" method="post">
+        <label for="user_id_fb">Your User ID</label>
+        <input type="number" id="user_id_fb" name="user_id" value="{{ user_id }}" min="1" required>
+        <label for="feedback">Your feedback</label>
+        <textarea id="feedback" name="feedback" rows="3" minlength="3" maxlength="500" required
+                  placeholder="e.g. Add more cardio and include two rest days"></textarea>
+        <button type="submit">Update my plan</button>
+      </form>
+    </section>
+
+    <p class="back"><a href="/">Create another plan</a></p>
+  </main>
+</body>
+</html>
